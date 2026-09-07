@@ -1,132 +1,170 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="h-full">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ToneCraft - Polyphonic Drone Wheel Studio</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  
+  <!-- Mobile Web App Meta (iOS & Android) -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="ToneCraft">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#0f172a">
+
+  <title>ToneCraft - Studio</title>
   <script src="https://cdn.tailwindcss.com"></script>
+
   <style>
+    /* Prevent text selection & rubber-band scrolling on mobile */
+    html, body {
+      touch-action: manipulation;
+      -webkit-touch-callout: none;
+      -webkit-user-select: none;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    /* Safe area padding for iPhone Notch / Dynamic Island / Gesture Bar */
+    .safe-padding {
+      padding-top: max(1rem, env(safe-area-inset-top));
+      padding-bottom: max(1rem, env(safe-area-inset-bottom));
+      padding-left: max(1rem, env(safe-area-inset-left));
+      padding-right: max(1rem, env(safe-area-inset-right));
+    }
+
     .smiley-neutral { transform: scaleY(0.1); border-radius: 0; }
     .smiley-happy { transform: scaleY(1); border-radius: 0 0 50px 50px; }
-    .wheel-slice { transition: fill 0.2s ease, transform 0.15s ease; cursor: pointer; }
-    .wheel-slice:hover { filter: brightness(1.25); }
+    
+    .wheel-slice {
+      transition: fill 0.15s ease, transform 0.1s ease;
+      cursor: pointer;
+    }
+    .wheel-slice:active {
+      filter: brightness(1.3);
+    }
   </style>
 </head>
-<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col items-center justify-center p-4 selection:bg-indigo-500 selection:text-white">
+<body class="bg-slate-900 text-slate-100 min-h-full flex flex-col items-center justify-between safe-padding font-sans antialiased">
 
-  <div class="bg-slate-800 p-6 md:p-8 rounded-3xl shadow-2xl border border-slate-700/80 w-full max-w-4xl text-center space-y-8">
+  <!-- MAIN APP CONTAINER -->
+  <main class="w-full max-w-md lg:max-w-4xl bg-slate-800/90 backdrop-blur-md rounded-3xl p-4 sm:p-6 shadow-2xl border border-slate-700/80 flex flex-col my-auto space-y-5">
     
-    <!-- Header with Hertz Calibration Controls -->
-    <header class="flex items-center justify-between border-b border-slate-700/60 pb-4">
-      <h1 class="text-xl font-bold tracking-wider text-indigo-400">TONECRAFT <span class="text-xs font-normal text-slate-400">v0.5</span></h1>
+    <!-- HEADER -->
+    <header class="flex items-center justify-between border-b border-slate-700/60 pb-3">
+      <div class="flex items-center gap-2">
+        <div class="w-3 h-3 rounded-full bg-indigo-500 animate-pulse"></div>
+        <h1 class="text-lg font-black tracking-wider text-indigo-400">TONECRAFT <span class="text-[10px] font-normal text-slate-400">v0.6</span></h1>
+      </div>
       
-      <!-- Hertz Controls -->
-      <div class="flex items-center gap-2 bg-slate-900/80 px-3 py-1 rounded-full border border-slate-700/60">
-        <span class="text-xs font-mono text-slate-400">A4 =</span>
-        <button id="pitch-down-btn" class="w-6 h-6 rounded bg-slate-800 hover:bg-slate-700 text-xs font-bold font-mono border border-slate-600 text-slate-200 transition">-</button>
-        <span id="ref-pitch-text" class="text-xs font-mono font-bold text-indigo-400 w-8 text-center">440</span>
-        <button id="pitch-up-btn" class="w-6 h-6 rounded bg-slate-800 hover:bg-slate-700 text-xs font-bold font-mono border border-slate-600 text-slate-200 transition">+</button>
-        <span class="text-xs font-mono text-slate-400">Hz</span>
+      <!-- Hertz Calibration -->
+      <div class="flex items-center gap-1.5 bg-slate-900/90 px-3 py-1 rounded-full border border-slate-700/80">
+        <span class="text-[11px] font-mono text-slate-400">A4=</span>
+        <button id="pitch-down-btn" class="w-7 h-7 rounded-full bg-slate-800 active:bg-slate-700 text-xs font-bold font-mono border border-slate-600 text-slate-200 flex items-center justify-center">-</button>
+        <span id="ref-pitch-text" class="text-xs font-mono font-bold text-indigo-400 w-7 text-center">440</span>
+        <button id="pitch-up-btn" class="w-7 h-7 rounded-full bg-slate-800 active:bg-slate-700 text-xs font-bold font-mono border border-slate-600 text-slate-200 flex items-center justify-center">+</button>
+        <span class="text-[11px] font-mono text-slate-400">Hz</span>
       </div>
     </header>
 
-    <!-- MAIN TUNER & DRONE SECTION GRID -->
-    <div class="grid grid-cols-1 md:grid-cols-12 gap-8 items-center">
+    <!-- GRID LAYOUT (Stacked on Mobile, Side-by-Side on Desktop) -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-center">
       
-      <!-- LEFT COLUMN: TUNER DISPLAY (5 Cols) -->
-      <div class="md:col-span-5 bg-slate-900/60 p-5 rounded-2xl border border-slate-700/50 flex flex-col items-center">
-        <span class="text-xs font-semibold tracking-widest text-slate-400 mb-2 uppercase">Live Pitch Analysis</span>
+      <!-- TOP / LEFT: MIC TUNER DISPLAY -->
+      <div class="lg:col-span-5 bg-slate-900/80 p-4 rounded-2xl border border-slate-700/50 flex flex-col items-center justify-center shadow-inner">
+        <span class="text-[10px] font-bold tracking-widest text-slate-400 uppercase">Microphone Tuner</span>
         
-        <div id="note-display" class="text-6xl font-extrabold text-slate-100 my-1 font-mono">--</div>
-        <div id="freq-display" class="text-xs font-mono text-slate-400 mb-4">0.0 Hz</div>
-
-        <!-- Target Smiley Indicator -->
-        <div class="relative w-28 h-28 my-2 rounded-full bg-slate-800 flex items-center justify-center border-4 border-slate-700 transition-all duration-300" id="target-circle">
-          <div class="absolute top-8 left-7 w-3.5 h-3.5 bg-slate-400 rounded-full"></div>
-          <div class="absolute top-8 right-7 w-3.5 h-3.5 bg-slate-400 rounded-full"></div>
-          <div id="mouth" class="absolute bottom-6 w-10 h-5 border-b-4 border-slate-400 transition-all duration-200 smiley-neutral"></div>
+        <div class="flex items-baseline gap-2 my-1">
+          <div id="note-display" class="text-5xl font-black text-slate-100 font-mono tracking-tight">--</div>
+          <div id="freq-display" class="text-xs font-mono text-indigo-400">0.0 Hz</div>
         </div>
 
-        <!-- Cents Bar -->
-        <div class="w-full bg-slate-800 h-2.5 rounded-full overflow-hidden relative my-3">
+        <!-- Target Smiley Indicator -->
+        <div class="relative w-20 h-20 my-1 rounded-full bg-slate-800 flex items-center justify-center border-2 border-slate-700 transition-all duration-300" id="target-circle">
+          <div class="absolute top-6 left-5 w-2.5 h-2.5 bg-slate-400 rounded-full"></div>
+          <div class="absolute top-6 right-5 w-2.5 h-2.5 bg-slate-400 rounded-full"></div>
+          <div id="mouth" class="absolute bottom-4 w-7 h-3.5 border-b-2 border-slate-400 transition-all duration-200 smiley-neutral"></div>
+        </div>
+
+        <!-- Cents Meter Bar -->
+        <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden relative my-2 border border-slate-700/50">
           <div class="absolute left-1/2 top-0 bottom-0 w-0.5 bg-slate-400 z-10"></div>
           <div id="cents-bar" class="h-full bg-indigo-500 w-0 transition-all duration-75 relative left-1/2"></div>
         </div>
-        <div id="cents-display" class="text-xs font-mono text-slate-400">0 cents</div>
+        <div id="cents-display" class="text-[11px] font-mono text-slate-400 mb-2">0 cents</div>
 
-        <button id="mic-btn" class="mt-4 w-full py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-medium rounded-xl shadow transition text-sm">
+        <button id="mic-btn" class="w-full py-3 bg-indigo-600 active:bg-indigo-700 text-white font-bold rounded-xl shadow-lg transition text-xs tracking-wider uppercase active:scale-95">
           Start Mic Tuner
         </button>
       </div>
 
-      <!-- RIGHT COLUMN: POLYPHONIC CHROMATIC DRONE WHEEL (7 Cols) -->
-      <div class="md:col-span-7 bg-slate-900/60 p-5 rounded-2xl border border-slate-700/50 flex flex-col items-center justify-between space-y-4">
+      <!-- BOTTOM / RIGHT: POLYPHONIC DRONE WHEEL -->
+      <div class="lg:col-span-7 bg-slate-900/80 p-4 rounded-2xl border border-slate-700/50 flex flex-col items-center justify-between space-y-3">
         
         <div class="w-full flex justify-between items-center">
-          <span class="text-xs font-semibold tracking-widest text-slate-400 uppercase">Polyphonic Drone Wheel</span>
-          <span id="drone-status" class="text-xs font-mono text-emerald-400 opacity-0 transition-opacity">OFF</span>
+          <span class="text-[10px] font-bold tracking-widest text-slate-400 uppercase">Polyphonic Drone Wheel</span>
+          <span id="drone-status" class="text-[11px] font-mono font-bold text-emerald-400 opacity-0 transition-opacity">● LIVE</span>
         </div>
 
-        <!-- INTERACTIVE SVG WHEEL -->
-        <div class="relative w-64 h-64 my-2 flex items-center justify-center">
-          <svg id="drone-wheel-svg" class="w-full h-full transform -rotate-90" viewBox="0 0 300 300">
+        <!-- INTERACTIVE SVG WHEEL (Scaled for touch screens) -->
+        <div class="relative w-56 h-56 sm:w-64 sm:h-64 my-1 flex items-center justify-center">
+          <svg id="drone-wheel-svg" class="w-full h-full transform -rotate-90 select-none" viewBox="0 0 300 300">
             <g id="wheel-slices-group"></g>
           </svg>
 
-          <!-- Center Toggle / Active Note Display -->
-          <div id="wheel-center-btn" class="absolute w-28 h-28 rounded-full bg-slate-800 border-4 border-slate-700 shadow-inner flex flex-col items-center justify-center cursor-pointer hover:border-indigo-500 transition p-2">
-            <span id="wheel-center-note" class="text-sm font-black text-indigo-400 font-mono text-center truncate max-w-full">A3</span>
-            <span id="wheel-center-freq" class="text-[10px] font-mono text-slate-400">220.0 Hz</span>
-            <span id="wheel-center-action" class="text-[9px] font-bold tracking-wider text-slate-400 uppercase mt-1">TAP TO PLAY</span>
+          <!-- Center Play / Clear Button -->
+          <div id="wheel-center-btn" class="absolute w-24 h-24 rounded-full bg-slate-800 border-4 border-slate-700 shadow-xl flex flex-col items-center justify-center active:scale-95 transition p-2 cursor-pointer">
+            <span id="wheel-center-note" class="text-xs font-black text-indigo-400 font-mono text-center truncate max-w-full">A3</span>
+            <span id="wheel-center-freq" class="text-[9px] font-mono text-slate-400">220.0 Hz</span>
+            <span id="wheel-center-action" class="text-[9px] font-black tracking-wider text-slate-300 uppercase mt-1">TAP TO PLAY</span>
           </div>
         </div>
 
-        <!-- OCTAVE & TIMBRE CONTROLS -->
-        <div class="w-full space-y-3">
-          <!-- Octave Selection -->
-          <div class="flex items-center justify-between bg-slate-800 p-1.5 rounded-xl text-xs font-mono">
-            <span class="text-slate-400 px-2">Octave:</span>
+        <!-- MOBILE CONTROLS BOARD -->
+        <div class="w-full space-y-2.5">
+          
+          <!-- Octave Switcher (Touch Targets) -->
+          <div class="flex items-center justify-between bg-slate-800/90 p-1 rounded-xl text-xs font-mono border border-slate-700/50">
+            <span class="text-slate-400 text-[10px] px-2 uppercase font-bold">Octave</span>
             <div id="octave-btns" class="flex gap-1">
-              <button data-oct="1" class="oct-btn px-2.5 py-1 rounded hover:bg-slate-700 text-slate-400">1</button>
-              <button data-oct="2" class="oct-btn px-2.5 py-1 rounded hover:bg-slate-700 text-slate-400">2</button>
-              <button data-oct="3" class="oct-btn px-2.5 py-1 rounded bg-indigo-600 text-white font-bold">3</button>
-              <button data-oct="4" class="oct-btn px-2.5 py-1 rounded hover:bg-slate-700 text-slate-400">4</button>
-              <button data-oct="5" class="oct-btn px-2.5 py-1 rounded hover:bg-slate-700 text-slate-400">5</button>
+              <button data-oct="1" class="oct-btn w-8 py-1.5 rounded-lg active:bg-slate-700 text-slate-400 text-xs font-bold">1</button>
+              <button data-oct="2" class="oct-btn w-8 py-1.5 rounded-lg active:bg-slate-700 text-slate-400 text-xs font-bold">2</button>
+              <button data-oct="3" class="oct-btn w-8 py-1.5 rounded-lg bg-indigo-600 text-white font-bold">3</button>
+              <button data-oct="4" class="oct-btn w-8 py-1.5 rounded-lg active:bg-slate-700 text-slate-400 text-xs font-bold">4</button>
+              <button data-oct="5" class="oct-btn w-8 py-1.5 rounded-lg active:bg-slate-700 text-slate-400 text-xs font-bold">5</button>
             </div>
           </div>
 
-          <!-- Waveform & Action Mode -->
+          <!-- Timbre & Clear Options -->
           <div class="grid grid-cols-2 gap-2 text-xs">
-            <!-- Timbre Selector -->
-            <div class="bg-slate-800 p-1.5 rounded-xl flex items-center justify-between">
-              <span class="text-slate-400 px-1 font-mono">Timbre:</span>
-              <select id="drone-wave-select" class="bg-slate-900 border border-slate-700 rounded px-2 py-1 font-mono text-slate-200 focus:outline-none">
+            <div class="bg-slate-800/90 px-2 py-1.5 rounded-xl flex items-center justify-between border border-slate-700/50">
+              <span class="text-slate-400 text-[10px] font-bold uppercase">Sound</span>
+              <select id="drone-wave-select" class="bg-slate-900 border border-slate-700 rounded-lg px-1.5 py-1 text-xs font-mono text-slate-200 focus:outline-none">
                 <option value="triangle" selected>Triangle</option>
                 <option value="sine">Sine</option>
                 <option value="sawtooth">Sawtooth</option>
               </select>
             </div>
 
-            <!-- Clear All Active Notes -->
-            <button id="clear-notes-btn" class="bg-slate-800 border border-slate-700 hover:bg-slate-700 text-slate-300 rounded-xl px-2 py-1.5 font-mono transition flex items-center justify-center">
-              Clear Selected Notes
+            <button id="clear-notes-btn" class="bg-slate-800/90 border border-slate-700/50 active:bg-slate-700 text-slate-300 rounded-xl px-2 py-1.5 font-mono text-[11px] font-bold transition active:scale-95">
+              Clear Notes
             </button>
           </div>
 
           <!-- Volume Slider -->
-          <div class="pt-1">
-            <div class="flex justify-between text-xs text-slate-400 mb-1">
-              <span>Drone Volume</span>
-              <span id="volume-val">50%</span>
+          <div class="px-1">
+            <div class="flex justify-between text-[10px] text-slate-400 font-bold uppercase mb-1">
+              <span>Volume</span>
+              <span id="volume-val" class="font-mono text-indigo-400">50%</span>
             </div>
             <input type="range" id="drone-volume" min="0" max="100" value="50" class="w-full accent-indigo-500 cursor-pointer bg-slate-700 h-2 rounded-lg">
           </div>
+
         </div>
 
       </div>
 
     </div>
-  </div>
+  </main>
 
   <script>
     const NOTE_NAMES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
@@ -138,13 +176,12 @@
     let micDataArray = null;
     let isMicListening = false;
 
-    // Polyphonic Drone Wheel State
-    let activeNoteIndices = new Set([9]); // Default contains 'A' (Index 9)
-    let activeOctave = 3;                 // Default Octave 3
+    // Polyphonic Drone State
+    let activeNoteIndices = new Set([9]); // Default 'A'
+    let activeOctave = 3;
     let isDronePlaying = false;
-    
     let droneGain = null;
-    let droneOscs = {}; // Map of noteIndex -> OscillatorNode
+    let droneOscs = {};
 
     // DOM Elements
     const pitchText = document.getElementById('ref-pitch-text');
@@ -172,13 +209,24 @@
     const droneVolumeSlider = document.getElementById('drone-volume');
     const volumeVal = document.getElementById('volume-val');
 
-    function getAudioContext() {
-      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      if (audioCtx.state === 'suspended') audioCtx.resume();
+    // --- MOBILE WEB AUDIO UNLOCK HANDLER ---
+    function initOrResumeAudioContext() {
+      if (!audioCtx) {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        audioCtx = new AudioContextClass({ latencyHint: 'interactive' });
+      }
+      if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+      }
       return audioCtx;
     }
 
-    // --- HERTZ CALIBRATION HANDLERS ---
+    // Attach silent unlock listener on first mobile tap
+    ['touchstart', 'touchend', 'mousedown'].forEach(evt => {
+      document.addEventListener(evt, () => initOrResumeAudioContext(), { once: true });
+    });
+
+    // --- HERTZ CALIBRATION ---
     function setReferencePitch(newFreq) {
       refA4 = Math.max(415, Math.min(466, newFreq));
       pitchText.textContent = refA4;
@@ -194,10 +242,10 @@
       return refA4 * Math.pow(2, (midi - 69) / 12);
     }
 
-    // --- CHROMATIC SVG WHEEL GENERATOR ---
+    // --- SVG WHEEL RENDERER ---
     function renderWheel() {
       wheelSlicesGroup.innerHTML = '';
-      const cx = 150, cy = 150, outerR = 145, innerR = 65;
+      const cx = 150, cy = 150, outerR = 145, innerR = 60;
       const totalSlices = 12;
       const sliceAngle = (2 * Math.PI) / totalSlices;
 
@@ -241,10 +289,10 @@
         group.appendChild(path);
         group.appendChild(text);
 
-        // Slice Click Handler (Toggle Note Selection)
-        group.addEventListener('click', () => {
+        group.addEventListener('click', (e) => {
+          e.preventDefault();
+          initOrResumeAudioContext();
           if (activeNoteIndices.has(i)) {
-            // Prevent removing the last note if drone is playing
             if (activeNoteIndices.size > 1) {
               activeNoteIndices.delete(i);
               if (isDronePlaying) stopSingleNoteOscillator(i);
@@ -267,13 +315,12 @@
       slices.forEach((slice, idx) => {
         const isAccidental = NOTE_NAMES[idx].includes('#');
         if (activeNoteIndices.has(idx)) {
-          slice.setAttribute('fill', '#6366f1'); // Highlight active indigo
+          slice.setAttribute('fill', '#6366f1');
         } else {
           slice.setAttribute('fill', isAccidental ? '#1e293b' : '#334155');
         }
       });
 
-      // Format Note list for Center Display
       const sortedIndices = Array.from(activeNoteIndices).sort((a, b) => a - b);
       if (sortedIndices.length === 0) {
         wheelCenterNote.textContent = "--";
@@ -283,15 +330,15 @@
         wheelCenterNote.textContent = `${NOTE_NAMES[idx]}${activeOctave}`;
         wheelCenterFreq.textContent = `${noteToFrequency(idx, activeOctave).toFixed(1)} Hz`;
       } else {
-        wheelCenterNote.textContent = sortedIndices.map(i => NOTE_NAMES[i]).join(' + ');
-        wheelCenterFreq.textContent = `${sortedIndices.length} Notes Chord`;
+        wheelCenterNote.textContent = sortedIndices.map(i => NOTE_NAMES[i]).join('+');
+        wheelCenterFreq.textContent = `${sortedIndices.length} Notes`;
       }
     }
 
-    // --- POLYPHONIC DRONE AUDIO ENGINE ---
+    // --- AUDIO DRONE ENGINE ---
     function startSingleNoteOscillator(noteIndex) {
       if (!isDronePlaying || !droneGain || droneOscs[noteIndex]) return;
-      const ctx = getAudioContext();
+      const ctx = initOrResumeAudioContext();
       const osc = ctx.createOscillator();
       const freq = noteToFrequency(noteIndex, activeOctave);
 
@@ -312,11 +359,9 @@
 
     function startDrone() {
       if (activeNoteIndices.size === 0) return;
-      const ctx = getAudioContext();
+      const ctx = initOrResumeAudioContext();
       
       droneGain = ctx.createGain();
-      
-      // Reduce individual note gain slightly based on chord size to prevent clipping
       const vol = (droneVolumeSlider.value / 100) / Math.sqrt(activeNoteIndices.size);
       droneGain.gain.setValueAtTime(0.0001, ctx.currentTime);
       droneGain.gain.exponentialRampToValueAtTime(Math.max(vol, 0.0001), ctx.currentTime + 0.05);
@@ -324,21 +369,17 @@
       droneGain.connect(ctx.destination);
       isDronePlaying = true;
 
-      // Spawn an oscillator for every selected note
-      activeNoteIndices.forEach(idx => {
-        startSingleNoteOscillator(idx);
-      });
+      activeNoteIndices.forEach(idx => startSingleNoteOscillator(idx));
 
-      droneStatus.textContent = "ON";
       droneStatus.classList.remove('opacity-0');
       wheelCenterAction.textContent = "STOP";
-      wheelCenterAction.classList.replace('text-slate-400', 'text-rose-400');
-      wheelCenterBtn.classList.add('border-indigo-500', 'shadow-[0_0_20px_rgba(99,102,241,0.4)]');
+      wheelCenterAction.classList.replace('text-slate-300', 'text-rose-400');
+      wheelCenterBtn.classList.add('border-indigo-500', 'shadow-[0_0_20px_rgba(99,102,241,0.5)]');
     }
 
     function stopDrone() {
       if (!droneGain) return;
-      const ctx = getAudioContext();
+      const ctx = initOrResumeAudioContext();
 
       droneGain.gain.setValueAtTime(droneGain.gain.value, ctx.currentTime);
       droneGain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.05);
@@ -350,15 +391,13 @@
       isDronePlaying = false;
       droneStatus.classList.add('opacity-0');
       wheelCenterAction.textContent = "TAP TO PLAY";
-      wheelCenterAction.classList.replace('text-rose-400', 'text-slate-400');
-      wheelCenterBtn.classList.remove('border-indigo-500', 'shadow-[0_0_20px_rgba(99,102,241,0.4)]');
+      wheelCenterAction.classList.replace('text-rose-400', 'text-slate-300');
+      wheelCenterBtn.classList.remove('border-indigo-500', 'shadow-[0_0_20px_rgba(99,102,241,0.5)]');
     }
 
     function updateAllDronePitches() {
       if (!isDronePlaying) return;
-      const ctx = getAudioContext();
-      
-      // Update gain scaling for chord size
+      const ctx = initOrResumeAudioContext();
       const vol = (droneVolumeSlider.value / 100) / Math.sqrt(Math.max(activeNoteIndices.size, 1));
       droneGain.gain.setTargetAtTime(vol, ctx.currentTime, 0.02);
 
@@ -369,54 +408,57 @@
       });
     }
 
-    // Toggle Play / Stop
     wheelCenterBtn.addEventListener('click', () => {
       if (isDronePlaying) stopDrone();
       else startDrone();
     });
 
-    // Clear All Active Notes Button
     clearNotesBtn.addEventListener('click', () => {
       if (isDronePlaying) stopDrone();
       activeNoteIndices.clear();
-      activeNoteIndices.add(9); // Reset to 'A'
+      activeNoteIndices.add(9);
       updateWheelDisplay();
     });
 
-    // Octave controls
     octaveBtns.forEach(btn => {
       btn.addEventListener('click', (e) => {
-        octaveBtns.forEach(b => b.className = "oct-btn px-2.5 py-1 rounded hover:bg-slate-700 text-slate-400");
-        e.target.className = "oct-btn px-2.5 py-1 rounded bg-indigo-600 text-white font-bold";
+        octaveBtns.forEach(b => b.className = "oct-btn w-8 py-1.5 rounded-lg active:bg-slate-700 text-slate-400 text-xs font-bold");
+        e.target.className = "oct-btn w-8 py-1.5 rounded-lg bg-indigo-600 text-white text-xs font-bold";
         activeOctave = parseInt(e.target.dataset.oct, 10);
         updateWheelDisplay();
         if (isDronePlaying) updateAllDronePitches();
       });
     });
 
-    // Waveform switcher
     droneWaveSelect.addEventListener('change', (e) => {
       Object.values(droneOscs).forEach(osc => { osc.type = e.target.value; });
     });
 
-    // Volume adjustment
     droneVolumeSlider.addEventListener('input', (e) => {
       const volPct = e.target.value;
       volumeVal.textContent = `${volPct}%`;
       if (droneGain && isDronePlaying) {
-        const ctx = getAudioContext();
+        const ctx = initOrResumeAudioContext();
         const scaledVol = (volPct / 100) / Math.sqrt(Math.max(activeNoteIndices.size, 1));
         droneGain.gain.setTargetAtTime(Math.max(scaledVol, 0.0001), ctx.currentTime, 0.02);
       }
     });
 
-    // --- PITCH DETECTION & MIC TUNER ---
+    // --- PITCH DETECTION & MIC TUNER (iOS Safari Compatible) ---
     micBtn.addEventListener('click', async () => {
       if (isMicListening) return;
-      const ctx = getAudioContext();
+      const ctx = initOrResumeAudioContext();
 
       try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false } });
+        const audioConstraints = {
+          audio: {
+            echoCancellation: false,
+            autoGainControl: false,
+            noiseSuppression: false
+          }
+        };
+
+        const stream = await navigator.mediaDevices.getUserMedia(audioConstraints);
         const source = ctx.createMediaStreamSource(stream);
         micAnalyser = ctx.createAnalyser();
         micAnalyser.fftSize = 2048;
@@ -429,7 +471,7 @@
         
         updatePitch();
       } catch (err) {
-        alert("Microphone permission required for pitch detection.");
+        alert("Microphone permission was denied or is not supported on this browser.");
       }
     });
 
@@ -493,11 +535,11 @@
         centsBar.style.left = cents < 0 ? `${50 - (barWidth / 50) * 50}%` : '50%';
 
         if (Math.abs(cents) <= 5) {
-          targetCircle.className = "relative w-28 h-28 my-2 rounded-full bg-emerald-500/20 flex items-center justify-center border-4 border-emerald-400 shadow-[0_0_20px_rgba(52,211,153,0.5)] transition-all duration-200";
-          mouth.className = "absolute bottom-5 w-10 h-5 border-b-4 border-emerald-300 transition-all duration-200 smiley-happy";
+          targetCircle.className = "relative w-20 h-20 my-1 rounded-full bg-emerald-500/20 flex items-center justify-center border-2 border-emerald-400 shadow-[0_0_20px_rgba(52,211,153,0.5)] transition-all duration-200";
+          mouth.className = "absolute bottom-3.5 w-7 h-3.5 border-b-2 border-emerald-300 transition-all duration-200 smiley-happy";
         } else {
-          targetCircle.className = "relative w-28 h-28 my-2 rounded-full bg-slate-800 flex items-center justify-center border-4 border-slate-700 transition-all duration-200";
-          mouth.className = "absolute bottom-6 w-10 h-5 border-b-4 border-slate-400 transition-all duration-200 smiley-neutral";
+          targetCircle.className = "relative w-20 h-20 my-1 rounded-full bg-slate-800 flex items-center justify-center border-2 border-slate-700 transition-all duration-200";
+          mouth.className = "absolute bottom-4 w-7 h-3.5 border-b-2 border-slate-400 transition-all duration-200 smiley-neutral";
         }
       } else {
         noteDisplay.textContent = "--";
