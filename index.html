@@ -26,10 +26,10 @@
     }
 
     .safe-padding {
-      padding-top: max(1rem, env(safe-area-inset-top));
-      padding-bottom: max(1rem, env(safe-area-inset-bottom));
-      padding-left: max(1rem, env(safe-area-inset-left));
-      padding-right: max(1rem, env(safe-area-inset-right));
+      padding-top: max(0.75rem, env(safe-area-inset-top));
+      padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
+      padding-left: max(0.75rem, env(safe-area-inset-left));
+      padding-right: max(0.75rem, env(safe-area-inset-right));
     }
 
     .smiley-neutral { transform: scaleY(0.1); border-radius: 0; }
@@ -44,48 +44,48 @@
     }
   </style>
 </head>
-<body class="bg-slate-900 text-slate-100 min-h-full flex flex-col items-center justify-between safe-padding font-sans antialiased">
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col items-center justify-start sm:justify-center safe-padding font-sans antialiased overflow-y-auto">
 
   <!-- MAIN APP CONTAINER -->
-  <main class="w-full max-w-md lg:max-w-5xl bg-slate-800/90 backdrop-blur-md rounded-3xl p-4 sm:p-6 shadow-2xl border border-slate-700/80 flex flex-col my-auto space-y-5">
+  <main class="w-full max-w-md lg:max-w-5xl bg-slate-800/90 backdrop-blur-md rounded-2xl sm:rounded-3xl p-3 sm:p-6 shadow-2xl border border-slate-700/80 flex flex-col my-auto space-y-4">
     
     <!-- HEADER -->
     <header class="flex items-center justify-between border-b border-slate-700/60 pb-3">
       <div class="flex items-center gap-2">
-        <div class="w-3 h-3 rounded-full bg-indigo-500 animate-pulse"></div>
-        <h1 class="text-lg font-black tracking-wider text-indigo-400">TONECRAFT <span class="text-[10px] font-normal text-slate-400">v1.2</span></h1>
+        <div class="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-indigo-500 animate-pulse"></div>
+        <h1 class="text-base sm:text-lg font-black tracking-wider text-indigo-400">TONECRAFT <span class="text-[10px] font-normal text-slate-400">v1.2</span></h1>
       </div>
       
       <!-- Hertz Calibration -->
-      <div class="flex items-center gap-1.5 bg-slate-900/90 px-3 py-1 rounded-full border border-slate-700/80">
-        <span class="text-[11px] font-mono text-slate-400">A4=</span>
-        <button id="pitch-down-btn" class="w-7 h-7 rounded-full bg-slate-800 active:bg-slate-700 text-xs font-bold font-mono border border-slate-600 text-slate-200 flex items-center justify-center">-</button>
-        <span id="ref-pitch-text" class="text-xs font-mono font-bold text-indigo-400 w-7 text-center">440</span>
-        <button id="pitch-up-btn" class="w-7 h-7 rounded-full bg-slate-800 active:bg-slate-700 text-xs font-bold font-mono border border-slate-600 text-slate-200 flex items-center justify-center">+</button>
-        <span class="text-[11px] font-mono text-slate-400">Hz</span>
+      <div class="flex items-center gap-1 bg-slate-900/90 px-2.5 py-1 rounded-full border border-slate-700/80">
+        <span class="text-[10px] sm:text-[11px] font-mono text-slate-400">A4=</span>
+        <button id="pitch-down-btn" class="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-slate-800 active:bg-slate-700 text-xs font-bold font-mono border border-slate-600 text-slate-200 flex items-center justify-center">-</button>
+        <span id="ref-pitch-text" class="text-xs font-mono font-bold text-indigo-400 w-6 sm:w-7 text-center">440</span>
+        <button id="pitch-up-btn" class="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-slate-800 active:bg-slate-700 text-xs font-bold font-mono border border-slate-600 text-slate-200 flex items-center justify-center">+</button>
+        <span class="text-[10px] sm:text-[11px] font-mono text-slate-400">Hz</span>
       </div>
     </header>
 
     <!-- MAIN GRID LAYOUT -->
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-stretch">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-4 items-start">
       
       <!-- LEFT COLUMN: MIC TUNER & METRONOME -->
       <div class="lg:col-span-5 flex flex-col space-y-4">
         
         <!-- MIC TUNER DISPLAY -->
-        <div class="bg-slate-900/80 p-4 rounded-2xl border border-slate-700/50 flex flex-col items-center justify-center shadow-inner">
+        <div class="bg-slate-900/80 p-3 sm:p-4 rounded-2xl border border-slate-700/50 flex flex-col items-center justify-center shadow-inner">
           <span class="text-[10px] font-bold tracking-widest text-slate-400 uppercase">Microphone Tuner</span>
           
           <div class="flex items-baseline gap-2 my-1">
-            <div id="note-display" class="text-4xl sm:text-5xl font-black text-slate-100 font-mono tracking-tight">--</div>
+            <div id="note-display" class="text-3xl sm:text-5xl font-black text-slate-100 font-mono tracking-tight">--</div>
             <div id="freq-display" class="text-xs font-mono text-indigo-400">0.0 Hz</div>
           </div>
 
           <!-- Target Smiley Indicator -->
-          <div class="relative w-16 h-16 sm:w-20 sm:h-20 my-1 rounded-full bg-slate-800 flex items-center justify-center border-2 border-slate-700 transition-all duration-300" id="target-circle">
-            <div class="absolute top-5 left-4 w-2 h-2 sm:w-2.5 sm:h-2.5 bg-slate-400 rounded-full"></div>
-            <div class="absolute top-5 right-4 w-2 h-2 sm:w-2.5 sm:h-2.5 bg-slate-400 rounded-full"></div>
-            <div id="mouth" class="absolute bottom-3 w-6 h-3 border-b-2 border-slate-400 transition-all duration-200 smiley-neutral"></div>
+          <div class="relative w-14 h-14 sm:w-20 sm:h-20 my-1 rounded-full bg-slate-800 flex items-center justify-center border-2 border-slate-700 transition-all duration-300" id="target-circle">
+            <div class="absolute top-4 sm:top-5 left-3.5 sm:left-4 w-2 h-2 sm:w-2.5 sm:h-2.5 bg-slate-400 rounded-full"></div>
+            <div class="absolute top-4 sm:top-5 right-3.5 sm:right-4 w-2 h-2 sm:w-2.5 sm:h-2.5 bg-slate-400 rounded-full"></div>
+            <div id="mouth" class="absolute bottom-2.5 sm:bottom-3 w-5 sm:w-6 h-2.5 sm:h-3 border-b-2 border-slate-400 transition-all duration-200 smiley-neutral"></div>
           </div>
 
           <!-- Cents Meter Bar -->
@@ -101,26 +101,26 @@
         </div>
 
         <!-- METRONOME MODULE -->
-        <div class="bg-slate-900/80 p-4 rounded-2xl border border-slate-700/50 flex flex-col space-y-3 shadow-inner">
+        <div class="bg-slate-900/80 p-3 sm:p-4 rounded-2xl border border-slate-700/50 flex flex-col space-y-3 shadow-inner">
           <div class="flex justify-between items-center">
             <span class="text-[10px] font-bold tracking-widest text-slate-400 uppercase">Metronome</span>
-            <div id="metro-indicators" class="flex flex-wrap gap-1.5 max-w-[180px] justify-end">
+            <div id="metro-indicators" class="flex flex-wrap gap-1 max-w-[140px] sm:max-w-[180px] justify-end">
               <!-- Beat LED Dots render dynamically -->
             </div>
           </div>
 
           <!-- Tempo Display & Adjustment -->
-          <div class="flex items-center justify-between">
-            <div class="flex items-baseline gap-1">
-              <span id="bpm-display" class="text-3xl font-black font-mono text-indigo-400">120</span>
+          <div class="flex items-center justify-between gap-2">
+            <div class="flex items-baseline gap-1 min-w-[70px]">
+              <span id="bpm-display" class="text-2xl sm:text-3xl font-black font-mono text-indigo-400">120</span>
               <span class="text-[10px] font-bold font-mono text-slate-400 uppercase">BPM</span>
             </div>
 
-            <div class="flex gap-1">
-              <button id="bpm-minus-5" class="px-2 py-1 bg-slate-800 active:bg-slate-700 rounded-lg text-xs font-mono font-bold text-slate-300 border border-slate-700">-5</button>
-              <button id="bpm-minus-1" class="px-2 py-1 bg-slate-800 active:bg-slate-700 rounded-lg text-xs font-mono font-bold text-slate-300 border border-slate-700">-1</button>
-              <button id="bpm-plus-1" class="px-2 py-1 bg-slate-800 active:bg-slate-700 rounded-lg text-xs font-mono font-bold text-slate-300 border border-slate-700">+1</button>
-              <button id="bpm-plus-5" class="px-2 py-1 bg-slate-800 active:bg-slate-700 rounded-lg text-xs font-mono font-bold text-slate-300 border border-slate-700">+5</button>
+            <div class="flex gap-1 flex-wrap justify-end">
+              <button id="bpm-minus-5" class="px-1.5 sm:px-2 py-1 bg-slate-800 active:bg-slate-700 rounded-lg text-xs font-mono font-bold text-slate-300 border border-slate-700">-5</button>
+              <button id="bpm-minus-1" class="px-1.5 sm:px-2 py-1 bg-slate-800 active:bg-slate-700 rounded-lg text-xs font-mono font-bold text-slate-300 border border-slate-700">-1</button>
+              <button id="bpm-plus-1" class="px-1.5 sm:px-2 py-1 bg-slate-800 active:bg-slate-700 rounded-lg text-xs font-mono font-bold text-slate-300 border border-slate-700">+1</button>
+              <button id="bpm-plus-5" class="px-1.5 sm:px-2 py-1 bg-slate-800 active:bg-slate-700 rounded-lg text-xs font-mono font-bold text-slate-300 border border-slate-700">+5</button>
             </div>
           </div>
 
@@ -128,7 +128,7 @@
           <input type="range" id="bpm-slider" min="30" max="280" value="120" class="w-full accent-indigo-500 cursor-pointer bg-slate-700 h-2 rounded-lg">
 
           <!-- Time Signature & Subdivisions -->
-          <div class="grid grid-cols-2 gap-2 text-xs font-mono">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-mono">
             
             <!-- Time Signature Selection -->
             <div class="bg-slate-800/90 px-2 py-1.5 rounded-xl border border-slate-700/50 flex items-center justify-between">
@@ -163,11 +163,11 @@
 
           <!-- Controls: Tap Tempo & Start/Stop -->
           <div class="grid grid-cols-2 gap-2 pt-1">
-            <button id="tap-tempo-btn" class="py-2.5 bg-slate-800 active:bg-slate-700 text-slate-200 font-bold rounded-xl border border-slate-700 text-xs tracking-wider uppercase active:scale-95 font-mono">
+            <button id="tap-tempo-btn" class="py-2.5 bg-slate-800 active:bg-slate-700 text-slate-200 font-bold rounded-xl border border-slate-700 text-xs tracking-wider uppercase active:scale-95 font-mono truncate px-1">
               TAP TEMPO
             </button>
 
-            <button id="metro-toggle-btn" class="py-2.5 bg-indigo-600 active:bg-indigo-700 text-white font-bold rounded-xl shadow-lg transition text-xs tracking-wider uppercase active:scale-95 font-mono">
+            <button id="metro-toggle-btn" class="py-2.5 bg-indigo-600 active:bg-indigo-700 text-white font-bold rounded-xl shadow-lg transition text-xs tracking-wider uppercase active:scale-95 font-mono truncate px-1">
               START METRO
             </button>
           </div>
@@ -176,7 +176,7 @@
       </div>
 
       <!-- RIGHT COLUMN: TONALENERGY STYLE TONE WHEEL -->
-      <div class="lg:col-span-7 bg-slate-900/80 p-4 rounded-2xl border border-slate-700/50 flex flex-col items-center justify-between space-y-3">
+      <div class="lg:col-span-7 bg-slate-900/80 p-3 sm:p-4 rounded-2xl border border-slate-700/50 flex flex-col items-center justify-between space-y-3">
         
         <div class="w-full flex justify-between items-center">
           <span class="text-[10px] font-bold tracking-widest text-slate-400 uppercase">Tonal Tone Wheel</span>
@@ -184,24 +184,24 @@
         </div>
 
         <!-- SVG TONAL WHEEL -->
-        <div class="relative w-64 h-64 sm:w-72 sm:h-72 my-1 flex items-center justify-center">
+        <div class="relative w-full max-w-[260px] sm:max-w-[280px] aspect-square my-1 flex items-center justify-center">
           <svg id="drone-wheel-svg" class="w-full h-full select-none" viewBox="0 0 300 300">
             <g id="wheel-slices-group"></g>
           </svg>
 
           <!-- Center Control Hub -->
-          <div class="absolute w-28 h-28 rounded-full bg-slate-800 border-4 border-slate-700 shadow-2xl flex flex-col items-center justify-between p-2 cursor-pointer transition-all duration-200" id="wheel-center-hub">
+          <div class="absolute w-24 h-24 sm:w-28 sm:h-28 rounded-full bg-slate-800 border-4 border-slate-700 shadow-2xl flex flex-col items-center justify-between p-1.5 sm:p-2 cursor-pointer transition-all duration-200" id="wheel-center-hub">
             
-            <button id="clear-wheel-btn" type="button" class="text-[9px] font-bold font-mono text-slate-400 hover:text-indigo-400 uppercase tracking-widest py-0.5 px-2 rounded-full bg-slate-900/80 border border-slate-700/80">
+            <button id="clear-wheel-btn" type="button" class="text-[8px] sm:text-[9px] font-bold font-mono text-slate-400 hover:text-indigo-400 uppercase tracking-widest py-0.5 px-1.5 sm:px-2 rounded-full bg-slate-900/80 border border-slate-700/80">
               Clear
             </button>
 
             <div id="center-play-trigger" class="flex flex-col items-center justify-center my-auto w-full">
-              <span id="wheel-center-note" class="text-sm font-black text-indigo-400 font-mono text-center truncate max-w-full">C3</span>
-              <span id="wheel-center-freq" class="text-[9px] font-mono text-slate-400">130.8 Hz</span>
+              <span id="wheel-center-note" class="text-xs sm:text-sm font-black text-indigo-400 font-mono text-center truncate max-w-full">C3</span>
+              <span id="wheel-center-freq" class="text-[8px] sm:text-[9px] font-mono text-slate-400">130.8 Hz</span>
             </div>
 
-            <span id="wheel-center-action" class="text-[9px] font-black tracking-wider text-slate-300 uppercase">TAP TO PLAY</span>
+            <span id="wheel-center-action" class="text-[8px] sm:text-[9px] font-black tracking-wider text-slate-300 uppercase">TAP TO PLAY</span>
           </div>
         </div>
 
@@ -209,7 +209,7 @@
         <div class="w-full space-y-2.5">
           
           <!-- Octave & Transpose Controls (TonalEnergy Style) -->
-          <div class="grid grid-cols-2 gap-2 text-xs font-mono">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs font-mono">
             
             <!-- Octave Adjustment -->
             <div class="bg-slate-800/90 p-2 rounded-xl border border-slate-700/50 flex items-center justify-between">
@@ -234,7 +234,7 @@
           </div>
 
           <!-- Timbre & Playback Settings -->
-          <div class="grid grid-cols-2 gap-2 text-xs">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
             <div class="bg-slate-800/90 px-2 py-1.5 rounded-xl flex items-center justify-between border border-slate-700/50">
               <span class="text-slate-400 text-[10px] font-bold uppercase">Sound</span>
               <select id="drone-wave-select" class="bg-slate-900 border border-slate-700 rounded-lg px-1 py-1 text-[11px] font-mono text-slate-200 focus:outline-none">
@@ -406,7 +406,6 @@
     pitchUpBtn.addEventListener('click', () => setReferencePitch(refA4 + 1));
 
     function noteToFrequency(noteIndex, octave, semitoneShift = 0) {
-      // Map index to standard MIDI note calculation relative to A4 (MIDI 69)
       const midi = (octave + 1) * 12 + noteIndex + semitoneShift;
       return refA4 * Math.pow(2, (midi - 69) / 12);
     }
@@ -418,7 +417,6 @@
       const totalSlices = 12;
       const sliceAngle = (2 * Math.PI) / totalSlices;
 
-      // Rotate wheel -90 deg so C is at top 12 o'clock
       const rotationOffset = -Math.PI / 2;
 
       CHROMATIC_SCALE.forEach((noteObj, i) => {
@@ -446,7 +444,6 @@
         const tx = cx + textR * Math.cos(midAngle);
         const ty = cy + textR * Math.sin(midAngle);
 
-        // Calculate slice label orientation
         let deg = (midAngle * 180 / Math.PI) + 90;
 
         const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
@@ -497,9 +494,8 @@
       const slices = document.querySelectorAll('.wheel-slice');
       slices.forEach((slice, idx) => {
         if (activeNoteIndices.has(idx)) {
-          slice.setAttribute('fill', '#6366f1'); // Tonal energy primary tone active color
+          slice.setAttribute('fill', '#6366f1');
         } else {
-          // Color distinction between natural and accidental segments
           slice.setAttribute('fill', CHROMATIC_SCALE[idx].isAccidental ? '#1e293b' : '#334155');
         }
       });
@@ -587,7 +583,6 @@
       const vol = (droneVolumeSlider.value / 100) / Math.sqrt(Math.max(activeNoteIndices.size, 1));
       droneGain.gain.setTargetAtTime(vol, ctx.currentTime, 0.02);
 
-      // Re-sync oscillators with active note set
       Object.keys(droneOscs).forEach(idxStr => {
         const idx = parseInt(idxStr, 10);
         if (!activeNoteIndices.has(idx)) {
@@ -614,11 +609,10 @@
       e.stopPropagation();
       if (isDronePlaying) stopDrone();
       activeNoteIndices.clear();
-      activeNoteIndices.add(0); // Reset back to 'C'
+      activeNoteIndices.add(0);
       updateWheelDisplay();
     });
 
-    // Octave & Transpose controls
     octDownBtn.addEventListener('click', () => {
       if (activeOctave > 1) {
         activeOctave--;
@@ -722,7 +716,7 @@
       metroIndicators.innerHTML = '';
       for (let i = 0; i < beatsPerMeasure; i++) {
         const dot = document.createElement('div');
-        dot.className = `w-2.5 h-2.5 rounded-full border border-slate-600 bg-slate-800 transition-all duration-100`;
+        dot.className = `w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full border border-slate-600 bg-slate-800 transition-all duration-100`;
         dot.id = `metro-dot-${i}`;
         metroIndicators.appendChild(dot);
       }
@@ -734,10 +728,10 @@
         if (!dot) continue;
         if (i === beatIndex) {
           dot.className = i === 0 
-            ? 'w-2.5 h-2.5 rounded-full bg-emerald-400 border-emerald-300 shadow-[0_0_8px_rgba(52,211,153,0.8)] scale-125' 
-            : 'w-2.5 h-2.5 rounded-full bg-indigo-500 border-indigo-400 shadow-[0_0_8px_rgba(99,102,241,0.8)] scale-110';
+            ? 'w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-emerald-400 border-emerald-300 shadow-[0_0_8px_rgba(52,211,153,0.8)] scale-125' 
+            : 'w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full bg-indigo-500 border-indigo-400 shadow-[0_0_8px_rgba(99,102,241,0.8)] scale-110';
         } else {
-          dot.className = 'w-2.5 h-2.5 rounded-full border border-slate-600 bg-slate-800';
+          dot.className = 'w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full border border-slate-600 bg-slate-800';
         }
       }
     }
@@ -820,7 +814,7 @@
 
       for (let i = 0; i < beatsPerMeasure; i++) {
         const dot = document.getElementById(`metro-dot-${i}`);
-        if (dot) dot.className = 'w-2.5 h-2.5 rounded-full border border-slate-600 bg-slate-800';
+        if (dot) dot.className = 'w-2 h-2 sm:w-2.5 sm:h-2.5 rounded-full border border-slate-600 bg-slate-800';
       }
     }
 
@@ -894,8 +888,8 @@
       freqDisplay.textContent = "0.0 Hz";
       centsDisplay.textContent = "0 cents";
       centsBar.style.width = "0%";
-      targetCircle.className = "relative w-16 h-16 sm:w-20 sm:h-20 my-1 rounded-full bg-slate-800 flex items-center justify-center border-2 border-slate-700 transition-all duration-200";
-      mouth.className = "absolute bottom-3 w-6 h-3 border-b-2 border-slate-400 transition-all duration-200 smiley-neutral";
+      targetCircle.className = "relative w-14 h-14 sm:w-20 sm:h-20 my-1 rounded-full bg-slate-800 flex items-center justify-center border-2 border-slate-700 transition-all duration-200";
+      mouth.className = "absolute bottom-2.5 sm:bottom-3 w-5 sm:w-6 h-2.5 sm:h-3 border-b-2 border-slate-400 transition-all duration-200 smiley-neutral";
 
       micBtn.textContent = "START LISTENING";
       micBtn.classList.replace('bg-rose-600', 'bg-indigo-600');
@@ -972,11 +966,11 @@
         centsBar.style.left = cents < 0 ? `${50 - (barWidth / 50) * 50}%` : '50%';
 
         if (Math.abs(cents) <= 5) {
-          targetCircle.className = "relative w-16 h-16 sm:w-20 sm:h-20 my-1 rounded-full bg-emerald-500/20 flex items-center justify-center border-2 border-emerald-400 shadow-[0_0_20px_rgba(52,211,153,0.5)] transition-all duration-200";
-          mouth.className = "absolute bottom-3 w-6 h-3 border-b-2 border-emerald-300 transition-all duration-200 smiley-happy";
+          targetCircle.className = "relative w-14 h-14 sm:w-20 sm:h-20 my-1 rounded-full bg-emerald-500/20 flex items-center justify-center border-2 border-emerald-400 shadow-[0_0_20px_rgba(52,211,153,0.5)] transition-all duration-200";
+          mouth.className = "absolute bottom-2.5 sm:bottom-3 w-5 sm:w-6 h-2.5 sm:h-3 border-b-2 border-emerald-300 transition-all duration-200 smiley-happy";
         } else {
-          targetCircle.className = "relative w-16 h-16 sm:w-20 sm:h-20 my-1 rounded-full bg-slate-800 flex items-center justify-center border-2 border-slate-700 transition-all duration-200";
-          mouth.className = "absolute bottom-3 w-6 h-3 border-b-2 border-slate-400 transition-all duration-200 smiley-neutral";
+          targetCircle.className = "relative w-14 h-14 sm:w-20 sm:h-20 my-1 rounded-full bg-slate-800 flex items-center justify-center border-2 border-slate-700 transition-all duration-200";
+          mouth.className = "absolute bottom-2.5 sm:bottom-3 w-5 sm:w-6 h-2.5 sm:h-3 border-b-2 border-slate-400 transition-all duration-200 smiley-neutral";
         }
       } else {
         noteDisplay.textContent = "--";
