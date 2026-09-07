@@ -4,7 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   
-  <!-- Mobile Web App Meta (iOS & Android) -->
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="ToneCraft">
@@ -15,7 +14,6 @@
   <script src="https://cdn.tailwindcss.com"></script>
 
   <style>
-    /* Prevent text selection & rubber-band scrolling on mobile */
     html, body {
       touch-action: manipulation;
       -webkit-touch-callout: none;
@@ -24,7 +22,6 @@
       -webkit-tap-highlight-color: transparent;
     }
 
-    /* Safe area padding for iPhone Notch / Dynamic Island / Gesture Bar */
     .safe-padding {
       padding-top: max(1rem, env(safe-area-inset-top));
       padding-bottom: max(1rem, env(safe-area-inset-bottom));
@@ -36,7 +33,7 @@
     .smiley-happy { transform: scaleY(1); border-radius: 0 0 50px 50px; }
     
     .wheel-slice {
-      transition: fill 0.15s ease, transform 0.1s ease;
+      transition: fill 0.15s ease, transform 0.10s ease;
       cursor: pointer;
     }
     .wheel-slice:active {
@@ -53,7 +50,7 @@
     <header class="flex items-center justify-between border-b border-slate-700/60 pb-3">
       <div class="flex items-center gap-2">
         <div class="w-3 h-3 rounded-full bg-indigo-500 animate-pulse"></div>
-        <h1 class="text-lg font-black tracking-wider text-indigo-400">TONECRAFT <span class="text-[10px] font-normal text-slate-400">v0.6</span></h1>
+        <h1 class="text-lg font-black tracking-wider text-indigo-400">TONECRAFT <span class="text-[10px] font-normal text-slate-400">v0.9</span></h1>
       </div>
       
       <!-- Hertz Calibration -->
@@ -66,10 +63,10 @@
       </div>
     </header>
 
-    <!-- GRID LAYOUT (Stacked on Mobile, Side-by-Side on Desktop) -->
+    <!-- GRID LAYOUT -->
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-5 items-center">
       
-      <!-- TOP / LEFT: MIC TUNER DISPLAY -->
+      <!-- MIC TUNER DISPLAY -->
       <div class="lg:col-span-5 bg-slate-900/80 p-4 rounded-2xl border border-slate-700/50 flex flex-col items-center justify-center shadow-inner">
         <span class="text-[10px] font-bold tracking-widest text-slate-400 uppercase">Microphone Tuner</span>
         
@@ -97,7 +94,7 @@
         </button>
       </div>
 
-      <!-- BOTTOM / RIGHT: POLYPHONIC DRONE WHEEL -->
+      <!-- POLYPHONIC DRONE WHEEL -->
       <div class="lg:col-span-7 bg-slate-900/80 p-4 rounded-2xl border border-slate-700/50 flex flex-col items-center justify-between space-y-3">
         
         <div class="w-full flex justify-between items-center">
@@ -105,24 +102,24 @@
           <span id="drone-status" class="text-[11px] font-mono font-bold text-emerald-400 opacity-0 transition-opacity">● LIVE</span>
         </div>
 
-        <!-- INTERACTIVE SVG WHEEL (Scaled for touch screens) -->
-        <div class="relative w-56 h-56 sm:w-64 sm:h-64 my-1 flex items-center justify-center">
+        <!-- SVG WHEEL -->
+        <div class="relative w-60 h-60 sm:w-64 sm:h-64 my-1 flex items-center justify-center">
           <svg id="drone-wheel-svg" class="w-full h-full transform -rotate-90 select-none" viewBox="0 0 300 300">
             <g id="wheel-slices-group"></g>
           </svg>
 
           <!-- Center Play / Clear Button -->
-          <div id="wheel-center-btn" class="absolute w-24 h-24 rounded-full bg-slate-800 border-4 border-slate-700 shadow-xl flex flex-col items-center justify-center active:scale-95 transition p-2 cursor-pointer">
+          <div id="wheel-center-btn" class="absolute w-24 h-24 rounded-full bg-slate-800 border-4 border-slate-700 shadow-xl flex flex-col items-center justify-center active:scale-95 transition p-1.5 cursor-pointer">
             <span id="wheel-center-note" class="text-xs font-black text-indigo-400 font-mono text-center truncate max-w-full">A3</span>
             <span id="wheel-center-freq" class="text-[9px] font-mono text-slate-400">220.0 Hz</span>
-            <span id="wheel-center-action" class="text-[9px] font-black tracking-wider text-slate-300 uppercase mt-1">TAP TO PLAY</span>
+            <span id="wheel-center-action" class="text-[9px] font-black tracking-wider text-slate-300 uppercase mt-0.5">TAP TO PLAY</span>
           </div>
         </div>
 
-        <!-- MOBILE CONTROLS BOARD -->
+        <!-- CONTROLS BOARD -->
         <div class="w-full space-y-2.5">
           
-          <!-- Octave Switcher (Touch Targets) -->
+          <!-- Octave Switcher -->
           <div class="flex items-center justify-between bg-slate-800/90 p-1 rounded-xl text-xs font-mono border border-slate-700/50">
             <span class="text-slate-400 text-[10px] px-2 uppercase font-bold">Octave</span>
             <div id="octave-btns" class="flex gap-1">
@@ -134,19 +131,26 @@
             </div>
           </div>
 
-          <!-- Timbre & Clear Options -->
-          <div class="grid grid-cols-2 gap-2 text-xs">
+          <!-- Timbre, Sustain & Clear Options -->
+          <div class="grid grid-cols-3 gap-2 text-xs">
             <div class="bg-slate-800/90 px-2 py-1.5 rounded-xl flex items-center justify-between border border-slate-700/50">
               <span class="text-slate-400 text-[10px] font-bold uppercase">Sound</span>
-              <select id="drone-wave-select" class="bg-slate-900 border border-slate-700 rounded-lg px-1.5 py-1 text-xs font-mono text-slate-200 focus:outline-none">
+              <select id="drone-wave-select" class="bg-slate-900 border border-slate-700 rounded-lg px-1 py-1 text-[11px] font-mono text-slate-200 focus:outline-none">
                 <option value="triangle" selected>Triangle</option>
                 <option value="sine">Sine</option>
                 <option value="sawtooth">Sawtooth</option>
               </select>
             </div>
 
+            <!-- Sustain Button -->
+            <button id="sustain-btn" class="bg-slate-800/90 border border-slate-700/50 text-slate-400 rounded-xl px-2 py-1.5 font-mono text-[11px] font-bold transition active:scale-95 flex items-center justify-center gap-1">
+              <span>SUSTAIN</span>
+              <span id="sustain-indicator" class="text-[9px] px-1 py-0.2 rounded bg-slate-700 text-slate-400">OFF</span>
+            </button>
+
+            <!-- Clear Button -->
             <button id="clear-notes-btn" class="bg-slate-800/90 border border-slate-700/50 active:bg-slate-700 text-slate-300 rounded-xl px-2 py-1.5 font-mono text-[11px] font-bold transition active:scale-95">
-              Clear Notes
+              Clear
             </button>
           </div>
 
@@ -166,8 +170,25 @@
     </div>
   </main>
 
+  <!-- Hidden HTML5 Audio element to bypass iOS Ringer Switch -->
+  <audio id="silent-audio-element" loop id="silent-audio" style="display:none;"></audio>
+
   <script>
-    const NOTE_NAMES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+    const NOTE_DATA = [
+      { sharp: "C", flat: "C", isAccidental: false },
+      { sharp: "C#", flat: "D♭", isAccidental: true },
+      { sharp: "D", flat: "D", isAccidental: false },
+      { sharp: "D#", flat: "E♭", isAccidental: true },
+      { sharp: "E", flat: "E", isAccidental: false },
+      { sharp: "F", flat: "F", isAccidental: false },
+      { sharp: "F#", flat: "G♭", isAccidental: true },
+      { sharp: "G", flat: "G", isAccidental: false },
+      { sharp: "G#", flat: "A♭", isAccidental: true },
+      { sharp: "A", flat: "A", isAccidental: false },
+      { sharp: "A#", flat: "B♭", isAccidental: true },
+      { sharp: "B", flat: "B", isAccidental: false }
+    ];
+
     let audioCtx = null;
     let refA4 = 440;
     
@@ -180,6 +201,7 @@
     let activeNoteIndices = new Set([9]); // Default 'A'
     let activeOctave = 3;
     let isDronePlaying = false;
+    let isSustainEnabled = false;
     let droneGain = null;
     let droneOscs = {};
 
@@ -205,12 +227,35 @@
     
     const octaveBtns = document.querySelectorAll('.oct-btn');
     const droneWaveSelect = document.getElementById('drone-wave-select');
+    const sustainBtn = document.getElementById('sustain-btn');
+    const sustainIndicator = document.getElementById('sustain-indicator');
     const clearNotesBtn = document.getElementById('clear-notes-btn');
     const droneVolumeSlider = document.getElementById('drone-volume');
     const volumeVal = document.getElementById('volume-val');
 
-    // --- MOBILE WEB AUDIO UNLOCK HANDLER ---
+    // --- RINGER / SILENT SWITCH BYPASS ---
+    function enablePlaybackSession() {
+      // 1. Modern iOS Web Audio Session API (iOS 17+)
+      if (navigator.audioSession) {
+        try {
+          navigator.audioSession.type = 'playback';
+        } catch (e) {
+          console.warn('AudioSession type configuration not supported:', e);
+        }
+      }
+
+      // 2. Play silent audio stream via standard HTML5 Audio Element (iOS 15-16 fallback)
+      const silentAudio = document.getElementById('silent-audio-element');
+      if (silentAudio && silentAudio.paused) {
+        // Minimal silent WAV data URI
+        silentAudio.src = 'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBAAAAABAAEARKwAAIhYAQACABAAZGF0YQQAAAAAAA==';
+        silentAudio.play().catch(() => {});
+      }
+    }
+
     function initOrResumeAudioContext() {
+      enablePlaybackSession();
+
       if (!audioCtx) {
         const AudioContextClass = window.AudioContext || window.webkitAudioContext;
         audioCtx = new AudioContextClass({ latencyHint: 'interactive' });
@@ -221,12 +266,10 @@
       return audioCtx;
     }
 
-    // Attach silent unlock listener on first mobile tap
-    ['touchstart', 'touchend', 'mousedown'].forEach(evt => {
+    ['touchstart', 'touchend', 'mousedown', 'pointerdown'].forEach(evt => {
       document.addEventListener(evt, () => initOrResumeAudioContext(), { once: true });
     });
 
-    // --- HERTZ CALIBRATION ---
     function setReferencePitch(newFreq) {
       refA4 = Math.max(415, Math.min(466, newFreq));
       pitchText.textContent = refA4;
@@ -249,7 +292,7 @@
       const totalSlices = 12;
       const sliceAngle = (2 * Math.PI) / totalSlices;
 
-      NOTE_NAMES.forEach((note, i) => {
+      NOTE_DATA.forEach((noteObj, i) => {
         const startAngle = i * sliceAngle;
         const endAngle = (i + 1) * sliceAngle;
 
@@ -278,12 +321,12 @@
         text.setAttribute('x', tx);
         text.setAttribute('y', ty);
         text.setAttribute('fill', '#f8fafc');
-        text.setAttribute('font-size', '13');
+        text.setAttribute('font-size', noteObj.isAccidental ? '10' : '12');
         text.setAttribute('font-weight', 'bold');
         text.setAttribute('text-anchor', 'middle');
         text.setAttribute('dominant-baseline', 'central');
         text.setAttribute('transform', `rotate(90 ${tx} ${ty})`);
-        text.textContent = note;
+        text.textContent = noteObj.isAccidental ? `${noteObj.sharp}/${noteObj.flat}` : noteObj.sharp;
 
         const group = document.createElementNS('http://www.w3.org/2000/svg', 'g');
         group.appendChild(path);
@@ -293,7 +336,7 @@
           e.preventDefault();
           initOrResumeAudioContext();
           if (activeNoteIndices.has(i)) {
-            if (activeNoteIndices.size > 1) {
+            if (activeNoteIndices.size > 1 || isSustainEnabled) {
               activeNoteIndices.delete(i);
               if (isDronePlaying) stopSingleNoteOscillator(i);
             }
@@ -313,11 +356,10 @@
     function updateWheelDisplay() {
       const slices = document.querySelectorAll('.wheel-slice');
       slices.forEach((slice, idx) => {
-        const isAccidental = NOTE_NAMES[idx].includes('#');
         if (activeNoteIndices.has(idx)) {
           slice.setAttribute('fill', '#6366f1');
         } else {
-          slice.setAttribute('fill', isAccidental ? '#1e293b' : '#334155');
+          slice.setAttribute('fill', NOTE_DATA[idx].isAccidental ? '#1e293b' : '#334155');
         }
       });
 
@@ -327,15 +369,17 @@
         wheelCenterFreq.textContent = "0.0 Hz";
       } else if (sortedIndices.length === 1) {
         const idx = sortedIndices[0];
-        wheelCenterNote.textContent = `${NOTE_NAMES[idx]}${activeOctave}`;
+        const note = NOTE_DATA[idx];
+        const label = note.isAccidental ? `${note.sharp}/${note.flat}` : note.sharp;
+        wheelCenterNote.textContent = `${label}${activeOctave}`;
         wheelCenterFreq.textContent = `${noteToFrequency(idx, activeOctave).toFixed(1)} Hz`;
       } else {
-        wheelCenterNote.textContent = sortedIndices.map(i => NOTE_NAMES[i]).join('+');
+        wheelCenterNote.textContent = sortedIndices.map(i => NOTE_DATA[i].sharp).join('+');
         wheelCenterFreq.textContent = `${sortedIndices.length} Notes`;
       }
     }
 
-    // --- AUDIO DRONE ENGINE ---
+    // --- AUDIO ENGINE ---
     function startSingleNoteOscillator(noteIndex) {
       if (!isDronePlaying || !droneGain || droneOscs[noteIndex]) return;
       const ctx = initOrResumeAudioContext();
@@ -413,6 +457,21 @@
       else startDrone();
     });
 
+    sustainBtn.addEventListener('click', () => {
+      isSustainEnabled = !isSustainEnabled;
+      if (isSustainEnabled) {
+        sustainBtn.classList.replace('border-slate-700/50', 'border-indigo-500');
+        sustainBtn.classList.replace('text-slate-400', 'text-indigo-400');
+        sustainIndicator.textContent = "ON";
+        sustainIndicator.className = "text-[9px] px-1 py-0.2 rounded bg-indigo-600 text-white font-bold";
+      } else {
+        sustainBtn.classList.replace('border-indigo-500', 'border-slate-700/50');
+        sustainBtn.classList.replace('text-indigo-400', 'text-slate-400');
+        sustainIndicator.textContent = "OFF";
+        sustainIndicator.className = "text-[9px] px-1 py-0.2 rounded bg-slate-700 text-slate-400";
+      }
+    });
+
     clearNotesBtn.addEventListener('click', () => {
       if (isDronePlaying) stopDrone();
       activeNoteIndices.clear();
@@ -444,18 +503,14 @@
       }
     });
 
-    // --- PITCH DETECTION & MIC TUNER (iOS Safari Compatible) ---
+    // --- PITCH DETECTION & MIC TUNER ---
     micBtn.addEventListener('click', async () => {
       if (isMicListening) return;
       const ctx = initOrResumeAudioContext();
 
       try {
         const audioConstraints = {
-          audio: {
-            echoCancellation: false,
-            autoGainControl: false,
-            noiseSuppression: false
-          }
+          audio: { echoCancellation: false, autoGainControl: false, noiseSuppression: false }
         };
 
         const stream = await navigator.mediaDevices.getUserMedia(audioConstraints);
@@ -513,7 +568,8 @@
     function frequencyToNote(freq) {
       const noteNum = 12 * (Math.log(freq / refA4) / Math.log(2));
       const midi = Math.round(noteNum) + 69;
-      const noteName = NOTE_NAMES[midi % 12];
+      const noteObj = NOTE_DATA[midi % 12];
+      const noteName = noteObj.isAccidental ? `${noteObj.sharp}/${noteObj.flat}` : noteObj.sharp;
       const octave = Math.floor(midi / 12) - 1;
       const targetFreq = refA4 * Math.pow(2, (midi - 69) / 12);
       const cents = Math.floor(1200 * Math.log2(freq / targetFreq));
@@ -551,7 +607,6 @@
       requestAnimationFrame(updatePitch);
     }
 
-    // Initialize wheel on startup
     renderWheel();
   </script>
 </body>
