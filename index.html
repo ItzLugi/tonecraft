@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ToneCraft - Polyphonic Drone Wheel Studio</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    .smiley-neutral { transform: scaleY(0.1); border-radius: 0; }
+    .smiley-happy { transform: scaleY(1); border-radius: 0 0 50px 50px; }
+    .wheel-slice { transition: fill 0.2s ease, transform 0.15s ease; cursor: pointer; }
+    .wheel-slice:hover { filter: brightness(1.25); }
+  </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col items-center justify-center p-4 selection:bg-indigo-500 selection:text-white">
+
+  <div class="bg-slate-800 p-6 md:p-8 rounded-3xl shadow-2xl border border-slate-700/80 w-full max-w-4xl text-center space-y-8">
+    
+    <!-- Header with Hertz Calibration Controls -->
+    <header class="flex items-center justify-between border-b border-slate-700/60 pb-4">
+      <h1 class="text-xl font-bold tracking-wider text-indigo-400">TONECRAFT <span class="text-xs font-normal text-slate-400">v0.5</span></h1>
+      
+      <!-- Hertz Controls -->
+      <div class="flex items-center gap-2 bg-slate-900/80 px-3 py-1 rounded-full border border-slate-700/60">
+        <span class="text-xs font-mono text-slate-400">A4 =</span>
+        <button id="pitch-down-btn" class="w-6 h-6 rounded bg-slate-800 hover:bg-slate-700 text-xs font-bold font-mono border border-slate-600 text-slate-200 transition">-</button>
+        <span id="ref-pitch-text" class="text-xs font-mono font-bold text-indigo-400 w-8 text-center">440</span>
+        <button id="pitch-up-btn" class="w-6 h-6 rounded bg-slate-800 hover:bg-slate-700 text-xs font-bold font-mono border border-slate-600 text-slate-200 transition">+</button>
+        <span class="text-xs font-mono text-slate-400">Hz</span>
+      </div>
+    </header>
+
+    <!-- MAIN TUNER & DRONE SECTION GRID -->
+    <div class="grid grid-cols-1 md:grid-cols-12 gap-8 items-center">
+      
+      <!-- LEFT COLUMN: TUNER DISPLAY (5 Cols) -->
+      <div class="md:col-span-5 bg-slate-900/60 p-5 rounded-2xl border border-slate-700/50 flex flex-col items-center">
+        <span class="text-xs font-semibold tracking-widest text-slate-400 mb-2 uppercase">Live Pitch Analysis</span>
+        
+        <div id="note-display" class="text-6xl font-extrabold text-slate-100 my-1 font-mono">--</div>
+        <div id="freq-display" class="text-xs font-mono text-slate-400 mb-4">0.0 Hz</div>
+
+        <!-- Target Smiley Indicator -->
+        <div class="relative w-28 h-28 my-2 rounded-full bg-slate-800 flex items-center justify-center border-4 border-slate-700 transition-all duration-300" id="target-circle">
+          <div class="absolute top-8 left-7 w-3.5 h-3.5 bg-slate-400 rounded-full"></div>
+          <div class="absolute top-8 right-7 w-3.5 h-3.5 bg-slate-400 rounded-full"></div>
+          <div id="mouth" class="absolute bottom-6 w-10 h-5 border-b-4 border-slate-400 transition-all duration-200 smiley-neutral"></div>
+        </div>
+
+        <!-- Cents Bar -->
+        <div class="w-full bg-slate-800 h-2.5 rounded-full overflow-hidden relative my-3">
+          <div class="absolute left-1/2 top-0 bottom-0 w-0.5 bg-slate-400 z-10"></div>
+          <div id="cents-bar" class="h-full bg-indigo-500 w-0 transition-all duration-75 relative left-1/2"></div>
+        </div>
+        <div id="cents-display" class="text-xs font-mono text-slate-400">0 cents</div>
+
+        <button id="mic-btn" class="mt-4 w-full py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white font-medium rounded-xl shadow transition text-sm">
+          Start Mic Tuner
+        </button>
+      </div>
+
+      <!-- RIGHT COLUMN: POLYPHONIC CHROMATIC DRONE WHEEL (7 Cols) -->
+      <div class="md:col-span-7 bg-slate-900/60 p-5 rounded-2xl border border-slate-700/50 flex flex-col items-center justify-between space-y-4">
+        
+        <div class="w-full flex justify-between items-center">
+          <span class="text-xs font-semibold tracking-widest text-slate-400 uppercase">Polyphonic Drone Wheel</span>
+          <span id="drone-status" class="text-xs font-mono text-emerald-400 opacity-0 transition-opacity">OFF</span>
+        </div>
+
+        <!-- INTERACTIVE SVG WHEEL -->
+        <div class="relative w-64 h-64 my-2 flex items-center justify-center">
+          <svg id="drone-wheel-svg" class="w-full h-full transform -rotate-90" viewBox="0 0 300 300">
+            <g id="wheel-slices-group"></g>
+          </svg>
+
+          <!-- Center Toggle / Active Note Display -->
+          <div id="wheel-center-btn" class="absolute w-28 h-28 rounded-full bg-slate-800 border-4 border-slate-700 shadow-inner flex flex-col items-center justify-center cursor-pointer hover:border-indigo-500 transition p-2">
+            <span id="wheel-center-note" class="text-sm font-black text-indigo-400 font-mono text-center truncate max-w-full">A3</span>
+            <span id="wheel-center-freq" class="text-[10px] font-mono text-slate-400">220.0 Hz</span>
+            <span id="wheel-center-action" class="text-[9px] font-bold tracking-wider text-slate-400 uppercase mt-1">TAP TO PLAY</span>
+          </div>
+        </div>
+
+        <!-- OCTAVE & TIMBRE CONTROLS -->
+        <div class="w-full space-y-3">
+          <!-- Octave Selection -->
+          <div class="flex items-center justify-between bg-slate-800 p-1.5 rounded-xl text-xs font-mono">
+            <span class="text-slate-400 px-2">Octave:</span>
+            <div id="octave-btns" class="flex gap-1">
+              <button data-oct="1" class="oct-btn px-2.5 py-1 rounded hover:bg-slate-700 text-slate-400">1</button>
+              <button data-oct="2" class="oct-btn px-2.5 py-1 rounded hover:bg-slate-700 text-slate-400">2</button>
+              <button data-oct="3" class="oct-btn px-2.5 py-1 rounded bg-indigo-600 text-white font-bold">3</button>
+              <button data-oct="4" class="oct-btn px-2.5 py-1 rounded hover:bg-slate-700 text-slate-400">4</button>
+              <button data-oct="5" class="oct-btn px-2.5 py-1 rounded hover:bg-slate-700 text-slate-400">5</button>
+            </div>
+          </div>
+
+          <!-- Waveform & Action Mode -->
+          <div class="grid grid-cols-2 gap-2 text-xs">
+            <!-- Timbre Selector -->
+            <div class="bg-slate-800 p-1.5 rounded-xl flex items-center justify-between">
+              <span class="text-slate-400 px-1 font-mono">Timbre:</span>
+              <select id="drone-wave-select" class="bg-slate-900 border border-slate-700 rounded px-2 py-1 font-mono text-slate-200 focus:outline-none">
+                <option value="triangle" selected>Triangle</option>
+                <option value="sine">Sine</option>
+                <option value="sawtooth">Sawtooth</option>
+              </select>
+            </div>
+
+            <!-- Clear All Active Notes -->
+            <button id="clear-notes-btn" class="bg-slate-800 border border-slate-700 hover:bg-slate-700 text-slate-300 rounded-xl px-2 py-1.5 font-mono transition flex items-center justify-center">
+              Clear Selected Notes
+            </button>
+          </div>
+
+          <!-- Volume Slider -->
+          <div class="pt-1">
+            <div class="flex justify-between text-xs text-slate-400 mb-1">
+              <span>Drone Volume</span>
+              <span id="volume-val">50%</span>
+            </div>
+            <input type="range" id="drone-volume" min="0" max="100" value="50" class="w-full accent-indigo-500 cursor-pointer bg-slate-700 h-2 rounded-lg">
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    const NOTE_NAMES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+    let audioCtx = null;
+    let refA4 = 440;
+    
+    // Tuner State
+    let micAnalyser = null;
+    let micDataArray = null;
+    let isMicListening = false;
+
+    // Polyphonic Drone Wheel State
+    let activeNoteIndices = new Set([9]); // Default contains 'A' (Index 9)
+    let activeOctave = 3;                 // Default Octave 3
+    let isDronePlaying = false;
+    
+    let droneGain = null;
+    let droneOscs = {}; // Map of noteIndex -> OscillatorNode
+
+    // DOM Elements
+    const pitchText = document.getElementById('ref-pitch-text');
+    const pitchDownBtn = document.getElementById('pitch-down-btn');
+    const pitchUpBtn = document.getElementById('pitch-up-btn');
+
+    const micBtn = document.getElementById('mic-btn');
+    const noteDisplay = document.getElementById('note-display');
+    const freqDisplay = document.getElementById('freq-display');
+    const centsDisplay = document.getElementById('cents-display');
+    const centsBar = document.getElementById('cents-bar');
+    const targetCircle = document.getElementById('target-circle');
+    const mouth = document.getElementById('mouth');
+
+    const wheelSlicesGroup = document.getElementById('wheel-slices-group');
+    const wheelCenterBtn = document.getElementById('wheel-center-btn');
+    const wheelCenterNote = document.getElementById('wheel-center-note');
+    const wheelCenterFreq = document.getElementById('wheel-center-freq');
+    const wheelCenterAction = document.getElementById('wheel-center-action');
+    const droneStatus = document.getElementById('drone-status');
+    
+    const octaveBtns = document.querySelectorAll('.oct-btn');
+    const droneWaveSelect = document.getElementById('drone-wave-select');
+    const clearNotesBtn = document.getElementById('clear-notes-btn');
+    const droneVolumeSlider = document.getElementById('drone-volume');
+    const volumeVal = document.getElementById('volume-val');
+
+    function getAudioContext() {
+      if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+      return audioCtx;
+    }
+
+    // --- HERTZ CALIBRATION HANDLERS ---
+    function setReferencePitch(newFreq) {
+      refA4 = Math.max(415, Math.min(466, newFreq));
+      pitchText.textContent = refA4;
+      updateWheelDisplay();
+      if (isDronePlaying) updateAllDronePitches();
+    }
+
+    pitchDownBtn.addEventListener('click', () => setReferencePitch(refA4 - 1));
+    pitchUpBtn.addEventListener('click', () => setReferencePitch(refA4 + 1));
+
+    function noteToFrequency(noteIndex, octave) {
+      const midi = (octave + 1) * 12 + noteIndex;
+      return refA4 * Math.pow(2, (midi - 69) / 12);
+    }
+
+    // --- CHROMATIC SVG WHEEL GENERATOR ---
+    function renderWheel() {
+      wheelSlicesGroup.innerHTML = '';
+      const cx = 150, cy = 150, outerR = 145, innerR = 65;
+      const totalSlices = 12;
+      const sliceAngle = (2 * Math.PI) / totalSlices;
+
+      NOTE_NAMES.forEach((note, i) => {
+        const startAngle = i * sliceAngle;
+        const endAngle = (i + 1) * sliceAngle;
+
+        const x1 = cx + outerR * Math.cos(startAngle);
+        const y1 = cy + outerR * Math.sin(startAngle);
+        const x2 = cx + outerR * Math.cos(endAngle);
+        const y2 = cy + outerR * Math.sin(endAngle);
+        const x3 = cx + innerR * Math.cos(endAngle);
+        const y3 = cy + innerR * Math.sin(endAngle);
+        const x4 = cx + innerR * Math.cos(startAngle);
+        const y4 = cy + innerR * Math.sin(startAngle);
+
+        const pathData = `M ${x1} ${y1} A ${outerR} ${outerR} 0 0 1 ${x2} ${y2} L ${x3} ${y3} A ${innerR} ${innerR} 0 0 0 ${x4} ${y4} Z`;
+
+        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        path.setAttribute('d', pathData);
+        path.setAttribute('data-index', i);
+        path.setAttribute('class', 'wheel-slice stroke-slate-800 stroke-2');
+
+        const midAngle = startAngle + sliceAngle / 2;
+        const textR = (outerR + innerR) / 2;
+        const tx = cx + textR * Math.cos(midAngle);
+        const ty = cy + textR * Math.sin(midAngle);
+
+        const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        text.setAttribute('x', tx);
+        text.setAttribute('y', ty);
+        text.setAttribute('fill', '#f8fafc');
+        text.setAttribute('font-size', '13');
+        text.setAttribute('font-weight', 'bold');
+        text.setAttribute('text-anchor', 'middle');
+        text.setAttribute('dominant-baseline', 'central');
+        text.setAttribute('transform', `rotate(90 ${tx} ${ty})`);
+        text.textContent = note;
+
+        const group = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        group.appendChild(path);
+        group.appendChild(text);
+
+        // Slice Click Handler (Toggle Note Selection)
+        group.addEventListener('click', () => {
+          if (activeNoteIndices.has(i)) {
+            // Prevent removing the last note if drone is playing
+            if (activeNoteIndices.size > 1) {
+              activeNoteIndices.delete(i);
+              if (isDronePlaying) stopSingleNoteOscillator(i);
+            }
+          } else {
+            activeNoteIndices.add(i);
+            if (isDronePlaying) startSingleNoteOscillator(i);
+          }
+          updateWheelDisplay();
+        });
+
+        wheelSlicesGroup.appendChild(group);
+      });
+
+      updateWheelDisplay();
+    }
+
+    function updateWheelDisplay() {
+      const slices = document.querySelectorAll('.wheel-slice');
+      slices.forEach((slice, idx) => {
+        const isAccidental = NOTE_NAMES[idx].includes('#');
+        if (activeNoteIndices.has(idx)) {
+          slice.setAttribute('fill', '#6366f1'); // Highlight active indigo
+        } else {
+          slice.setAttribute('fill', isAccidental ? '#1e293b' : '#334155');
+        }
+      });
+
+      // Format Note list for Center Display
+      const sortedIndices = Array.from(activeNoteIndices).sort((a, b) => a - b);
+      if (sortedIndices.length === 0) {
+        wheelCenterNote.textContent = "--";
+        wheelCenterFreq.textContent = "0.0 Hz";
+      } else if (sortedIndices.length === 1) {
+        const idx = sortedIndices[0];
+        wheelCenterNote.textContent = `${NOTE_NAMES[idx]}${activeOctave}`;
+        wheelCenterFreq.textContent = `${noteToFrequency(idx, activeOctave).toFixed(1)} Hz`;
+      } else {
+        wheelCenterNote.textContent = sortedIndices.map(i => NOTE_NAMES[i]).join(' + ');
+        wheelCenterFreq.textContent = `${sortedIndices.length} Notes Chord`;
+      }
+    }
+
+    // --- POLYPHONIC DRONE AUDIO ENGINE ---
+    function startSingleNoteOscillator(noteIndex) {
+      if (!isDronePlaying || !droneGain || droneOscs[noteIndex]) return;
+      const ctx = getAudioContext();
+      const osc = ctx.createOscillator();
+      const freq = noteToFrequency(noteIndex, activeOctave);
+
+      osc.type = droneWaveSelect.value;
+      osc.frequency.setValueAtTime(freq, ctx.currentTime);
+      osc.connect(droneGain);
+      osc.start();
+      droneOscs[noteIndex] = osc;
+    }
+
+    function stopSingleNoteOscillator(noteIndex) {
+      if (droneOscs[noteIndex]) {
+        droneOscs[noteIndex].stop();
+        droneOscs[noteIndex].disconnect();
+        delete droneOscs[noteIndex];
+      }
+    }
+
+    function startDrone() {
+      if (activeNoteIndices.size === 0) return;
+      const ctx = getAudioContext();
+      
+      droneGain = ctx.createGain();
+      
+      // Reduce individual note gain slightly based on chord size to prevent clipping
+      const vol = (droneVolumeSlider.value / 100) / Math.sqrt(activeNoteIndices.size);
+      droneGain.gain.setValueAtTime(0.0001, ctx.currentTime);
+      droneGain.gain.exponentialRampToValueAtTime(Math.max(vol, 0.0001), ctx.currentTime + 0.05);
+
+      droneGain.connect(ctx.destination);
+      isDronePlaying = true;
+
+      // Spawn an oscillator for every selected note
+      activeNoteIndices.forEach(idx => {
+        startSingleNoteOscillator(idx);
+      });
+
+      droneStatus.textContent = "ON";
+      droneStatus.classList.remove('opacity-0');
+      wheelCenterAction.textContent = "STOP";
+      wheelCenterAction.classList.replace('text-slate-400', 'text-rose-400');
+      wheelCenterBtn.classList.add('border-indigo-500', 'shadow-[0_0_20px_rgba(99,102,241,0.4)]');
+    }
+
+    function stopDrone() {
+      if (!droneGain) return;
+      const ctx = getAudioContext();
+
+      droneGain.gain.setValueAtTime(droneGain.gain.value, ctx.currentTime);
+      droneGain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.05);
+
+      setTimeout(() => {
+        Object.keys(droneOscs).forEach(idx => stopSingleNoteOscillator(idx));
+      }, 50);
+
+      isDronePlaying = false;
+      droneStatus.classList.add('opacity-0');
+      wheelCenterAction.textContent = "TAP TO PLAY";
+      wheelCenterAction.classList.replace('text-rose-400', 'text-slate-400');
+      wheelCenterBtn.classList.remove('border-indigo-500', 'shadow-[0_0_20px_rgba(99,102,241,0.4)]');
+    }
+
+    function updateAllDronePitches() {
+      if (!isDronePlaying) return;
+      const ctx = getAudioContext();
+      
+      // Update gain scaling for chord size
+      const vol = (droneVolumeSlider.value / 100) / Math.sqrt(Math.max(activeNoteIndices.size, 1));
+      droneGain.gain.setTargetAtTime(vol, ctx.currentTime, 0.02);
+
+      Object.keys(droneOscs).forEach(idx => {
+        const noteIdx = parseInt(idx, 10);
+        const freq = noteToFrequency(noteIdx, activeOctave);
+        droneOscs[noteIdx].frequency.setTargetAtTime(freq, ctx.currentTime, 0.03);
+      });
+    }
+
+    // Toggle Play / Stop
+    wheelCenterBtn.addEventListener('click', () => {
+      if (isDronePlaying) stopDrone();
+      else startDrone();
+    });
+
+    // Clear All Active Notes Button
+    clearNotesBtn.addEventListener('click', () => {
+      if (isDronePlaying) stopDrone();
+      activeNoteIndices.clear();
+      activeNoteIndices.add(9); // Reset to 'A'
+      updateWheelDisplay();
+    });
+
+    // Octave controls
+    octaveBtns.forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        octaveBtns.forEach(b => b.className = "oct-btn px-2.5 py-1 rounded hover:bg-slate-700 text-slate-400");
+        e.target.className = "oct-btn px-2.5 py-1 rounded bg-indigo-600 text-white font-bold";
+        activeOctave = parseInt(e.target.dataset.oct, 10);
+        updateWheelDisplay();
+        if (isDronePlaying) updateAllDronePitches();
+      });
+    });
+
+    // Waveform switcher
+    droneWaveSelect.addEventListener('change', (e) => {
+      Object.values(droneOscs).forEach(osc => { osc.type = e.target.value; });
+    });
+
+    // Volume adjustment
+    droneVolumeSlider.addEventListener('input', (e) => {
+      const volPct = e.target.value;
+      volumeVal.textContent = `${volPct}%`;
+      if (droneGain && isDronePlaying) {
+        const ctx = getAudioContext();
+        const scaledVol = (volPct / 100) / Math.sqrt(Math.max(activeNoteIndices.size, 1));
+        droneGain.gain.setTargetAtTime(Math.max(scaledVol, 0.0001), ctx.currentTime, 0.02);
+      }
+    });
+
+    // --- PITCH DETECTION & MIC TUNER ---
+    micBtn.addEventListener('click', async () => {
+      if (isMicListening) return;
+      const ctx = getAudioContext();
+
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false } });
+        const source = ctx.createMediaStreamSource(stream);
+        micAnalyser = ctx.createAnalyser();
+        micAnalyser.fftSize = 2048;
+        source.connect(micAnalyser);
+
+        micDataArray = new Float32Array(micAnalyser.fftSize);
+        isMicListening = true;
+        micBtn.textContent = "Mic Listening...";
+        micBtn.classList.replace('bg-indigo-600', 'bg-emerald-600');
+        
+        updatePitch();
+      } catch (err) {
+        alert("Microphone permission required for pitch detection.");
+      }
+    });
+
+    function autoCorrelate(buffer, sampleRate) {
+      let SIZE = buffer.length;
+      let rms = 0;
+      for (let i = 0; i < SIZE; i++) rms += buffer[i] * buffer[i];
+      rms = Math.sqrt(rms / SIZE);
+      if (rms < 0.01) return -1;
+
+      let r1 = 0, r2 = SIZE - 1, thres = 0.2;
+      for (let i = 0; i < SIZE / 2; i++) if (Math.abs(buffer[i]) < thres) { r1 = i; break; }
+      for (let i = 1; i < SIZE / 2; i++) if (Math.abs(buffer[SIZE - i]) < thres) { r2 = SIZE - i; break; }
+
+      buffer = buffer.slice(r1, r2);
+      SIZE = buffer.length;
+
+      let c = new Array(SIZE).fill(0);
+      for (let i = 0; i < SIZE; i++) {
+        for (let j = 0; j < SIZE - i; j++) c[i] += buffer[j] * buffer[j + i];
+      }
+
+      let d = 0;
+      while (c[d] > c[d + 1]) d++;
+      let maxval = -1, maxpos = -1;
+      for (let i = d; i < SIZE; i++) {
+        if (c[i] > maxval) { maxval = c[i]; maxpos = i; }
+      }
+      let T0 = maxpos;
+
+      let x1 = c[T0 - 1], x2 = c[T0], x3 = c[T0 + 1];
+      let a = (x1 + x3 - 2 * x2) / 2;
+      let b = (x3 - x1) / 2;
+      if (a) T0 = T0 - b / (2 * a);
+
+      return sampleRate / T0;
+    }
+
+    function frequencyToNote(freq) {
+      const noteNum = 12 * (Math.log(freq / refA4) / Math.log(2));
+      const midi = Math.round(noteNum) + 69;
+      const noteName = NOTE_NAMES[midi % 12];
+      const octave = Math.floor(midi / 12) - 1;
+      const targetFreq = refA4 * Math.pow(2, (midi - 69) / 12);
+      const cents = Math.floor(1200 * Math.log2(freq / targetFreq));
+      return { noteName: `${noteName}${octave}`, cents };
+    }
+
+    function updatePitch() {
+      micAnalyser.getFloatTimeDomainData(micDataArray);
+      const pitch = autoCorrelate(micDataArray, audioCtx.sampleRate);
+
+      if (pitch !== -1) {
+        const { noteName, cents } = frequencyToNote(pitch);
+        noteDisplay.textContent = noteName;
+        freqDisplay.textContent = `${pitch.toFixed(1)} Hz`;
+        centsDisplay.textContent = `${cents > 0 ? '+' : ''}${cents} cents`;
+
+        const barWidth = Math.min(Math.abs(cents), 50);
+        centsBar.style.width = `${(barWidth / 50) * 50}%`;
+        centsBar.style.left = cents < 0 ? `${50 - (barWidth / 50) * 50}%` : '50%';
+
+        if (Math.abs(cents) <= 5) {
+          targetCircle.className = "relative w-28 h-28 my-2 rounded-full bg-emerald-500/20 flex items-center justify-center border-4 border-emerald-400 shadow-[0_0_20px_rgba(52,211,153,0.5)] transition-all duration-200";
+          mouth.className = "absolute bottom-5 w-10 h-5 border-b-4 border-emerald-300 transition-all duration-200 smiley-happy";
+        } else {
+          targetCircle.className = "relative w-28 h-28 my-2 rounded-full bg-slate-800 flex items-center justify-center border-4 border-slate-700 transition-all duration-200";
+          mouth.className = "absolute bottom-6 w-10 h-5 border-b-4 border-slate-400 transition-all duration-200 smiley-neutral";
+        }
+      } else {
+        noteDisplay.textContent = "--";
+        freqDisplay.textContent = "0.0 Hz";
+        centsDisplay.textContent = "0 cents";
+        centsBar.style.width = "0%";
+      }
+
+      requestAnimationFrame(updatePitch);
+    }
+
+    // Initialize wheel on startup
+    renderWheel();
+  </script>
+</body>
+</html>
